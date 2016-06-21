@@ -49,7 +49,7 @@
           date:$("#date").val(),
           category:$("#category").val(),
           name:$("#name").val(),
-          amount:$("#amount").val()
+          amount:$("#amount").val()/1 // 將字串轉為數字
         });
         expensesCollection.save();
         alert("儲存成功！");
