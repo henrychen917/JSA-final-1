@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <title>支出查詢</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/fdb-all.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta charset="UTF-8">
+    <style>
+      .input-field {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="col-md-12">
+        <h2 style="margin-bottom:20px;text-align:center;">支出查詢</h2>
+        <input type="radio" name="mode" value="thisMonth" /> 本月份
+        <br>
+        <input type="radio" name="mode" value="period" /> 指定期間
+        <br>
+        <input id="from" class="input-field" type="date"> ~ <input id="to" class="input-field" type="date">
+        <br><br>
+        <button id="submit" class="btn btn-primary btn-block">查詢</button>
+        <hr>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>項目</th>
+              <th>金額</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+      </div>
+    </div>
+    <script>
+      var fdb = new ForerunnerDB();
+      var db = fdb.db("DB");
+      var expensesCollection = db.collection("expenses");
+      expensesCollection.load();
+      $("#submit").on("click",function(){
+        var searchMode = $("input[name='mode']:checked").val();
+        var from="", to="";
+        if (searchMode=='thisMonth') {
+          var date = new Date();
+          var year = date.getUTCFullYear();
+          var month = date.getUTCMonth()+1; // gteMonth 的結果會是實際月份-1
+          if(month<=9){
+            month = "0"+month; // 必須讓月份以雙位數顯示，否則無法比較 ( Ex. 2016-10-1 會小於 2016-6-1 )
+          }
+          from = year+"-"+month+"-"+"01";
+          to = year+"-"+month+"-"+"31";
+        } else if(searchMode=='period'){
+          from = $("#from").val();
+          to = $("#to").val();
+        }
+
+        var expenses = expensesCollection.find(
+          {
+            date:{
+              $gte:from,
+              $lte:to
+            }
+          },{
+            $orderBy:{date:1}
+          }
+        );
+        $("tbody").html("");
+        if(expenses.length===0){
+          $("tbody").append("<tr><td colspan='3' style='text-align:center'>查無資料</td></tr>");
+        } else {
+          for(var i=0;i<expenses.length; i++){
+            $("tbody").append("<tr><td>"+expenses[i].date+"</td><td>"+expenses[i].name+"</td><td>"+expenses[i].amount+"</td></tr>");
+          }
+        }
+      });
+
+    </script>
+  </body>
+</html>
