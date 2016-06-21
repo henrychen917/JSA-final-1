@@ -27,6 +27,19 @@
         <button id="submit" class="btn btn-primary btn-block">查詢</button>
         <hr>
 
+
+        <table id="categories" class="table">
+          <thead>
+            <tr>
+              <th>類別</th>
+              <th>金額</th>
+              <th>比例</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+
         <table class="table">
           <thead>
             <tr>
@@ -37,6 +50,7 @@
           </thead>
           <tbody>
           </tbody>
+        </table>
       </div>
     </div>
     <script>
@@ -61,6 +75,14 @@
           to = $("#to").val();
         }
 
+        var categories={
+          "餐飲": 0,
+          "交通": 0,
+          "娛樂": 0,
+          "生活開銷": 0
+        };
+        var total = 0;
+
         var expenses = expensesCollection.find(
           {
             date:{
@@ -71,13 +93,22 @@
             $orderBy:{date:1}
           }
         );
+
         $("tbody").html("");
+
         if(expenses.length===0){
           $("tbody").append("<tr><td colspan='3' style='text-align:center'>查無資料</td></tr>");
         } else {
           for(var i=0;i<expenses.length; i++){
             $("tbody").append("<tr><td>"+expenses[i].date+"</td><td>"+expenses[i].name+"</td><td>"+expenses[i].amount+"</td></tr>");
+            categories[expenses[i].category] += expenses[i].amount/1;
+            total += expenses[i].amount/1;
           }
+          for(key in categories){
+            var amount = categories[key];
+            $("#categories").append("<tr><td>"+key+"</td><td>"+amount+"</td><td>"+Math.round(amount/total*100)+"%"+"</td></tr>");
+          }
+          $("#categories").append("<tr><td colspan='3'>總計: "+total+"</td></tr>");
         }
       });
 
